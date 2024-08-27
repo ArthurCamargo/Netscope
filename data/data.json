@@ -1,0 +1,16 @@
+[
+  {
+    "ip_src": "192.168.1.1",
+    "ip_dst": "192.168.1.2",
+    "protocol": "TCP",
+    "timestamp": 1693010101,
+    "frame_len": 1500
+  },
+  {
+    "ip_src": "192.168.1.3",
+    "ip_dst": "192.168.1.4",
+    "protocol": "UDP",
+    "timestamp": 1693010151,
+    "frame_len": 500
+  }
+]

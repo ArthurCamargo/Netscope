@@ -1,0 +1,36 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #3498db;
+  padding: 20px;
+  text-align: center;
+}
+header h1 {
+  color: white;
+  margin: 0;
+}
+
+main {
+  padding: 20px;
+}
+main #hilbert-graph {
+  width: 100%;
+  height: 500px;
+  margin-bottom: 30px;
+}
+main #charts {
+  display: flex;
+  justify-content: space-around;
+}
+main #charts div {
+  width: 45%;
+  height: 300px;
+}
+
+/*# sourceMappingURL=styles.css.map */

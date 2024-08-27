@@ -1,0 +1,43 @@
+$primary-color: #3498db;
+$background-color: #f4f4f4;
+$text-color: #333;
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: $background-color;
+    color: $text-color;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: $primary-color;
+    padding: 20px;
+    text-align: center;
+
+    h1 {
+        color: white;
+        margin: 0;
+    }
+}
+
+main {
+    padding: 20px;
+
+    #hilbert-graph {
+        width: 100%;
+        height: 500px;
+        margin-bottom: 30px;
+    }
+
+    #charts {
+        display: flex;
+        justify-content: space-around;
+
+        div {
+            width: 45%;
+            height: 300px;
+        }
+    }
+}
+

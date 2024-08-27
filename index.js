@@ -5,7 +5,7 @@ const path = require('path');
 const server = http.createServer((req, res) => {
     // Determine the file path
     let filePath = '.' + req.url;
-    if (filePath === './') filePath = './index.html';
+    if (filePath === './') filePath = './static/index.html';
 
     // Get the file extension
     const extname = path.extname(filePath).toLowerCase();

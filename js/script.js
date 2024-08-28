@@ -1,7 +1,7 @@
 // set the dimensions and margins of the graph
 const margin = {top: 80, right: 25, bottom: 30, left: 40},
-  width = 900 - margin.left - margin.right,
-  height = 900 - margin.top - margin.bottom;
+  width =  500 - margin.left - margin.right,
+  height = 4000 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 const svg = d3.select("#my_dataviz")
@@ -12,19 +12,19 @@ const svg = d3.select("#my_dataviz")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 //Read the data
-d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv").then(function(data) {
+d3.csv("../data/hilbert/csvs/ip_dst_processed.csv").then(function(data) {
 
   // Labels of row and columns -> unique identifier of the column called 
   // 'third_octect' and 'fourth_octect'
 
-  const ThirdOctect = Array.from(new Set(data.map(d => d.groups)))
-  const FourthOctect = Array.from(new Set(data.map(d => d.variables)))
+  const ThirdOctect = Array.from(new Set(data.map(d => d.third_octet)))
+  const FourthOctect = Array.from(new Set(data.map(d => d.fourth_octet)))
 
   // Build X scales and axis:
   const x = d3.scaleBand()
     .range([ 0, width ])
     .domain(ThirdOctect)
-    .padding(0.1);
+    .paddingInner(0.1);
   svg.append("g")
     .style("font-size", 15)
     .attr("transform", `translate(0, ${height})`)
@@ -36,7 +36,7 @@ d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/he
   const y = d3.scaleBand()
     .range([ height, 0 ])
     .domain(FourthOctect)
-    .padding(0.1);
+    .paddingInner(0.1);
   svg.append("g")
     .style("font-size", 15)
     .call(d3.axisLeft(y).tickSize(0))
@@ -44,9 +44,8 @@ d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/he
 
   // Build color scale
   const myColor = d3.scaleSequential()
-    .interpolator(d3.interpolateRainbow)
-    .domain([1, 100])
-    .range([0, 2_298_457])
+    .interpolator(d3.interpolateViridis)
+    .domain([1.744257e+07,2.e+07])
 
   // create a tooltip
   const tooltip = d3.select("#my_dataviz")
@@ -74,6 +73,7 @@ d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/he
             "volume total: " + d.volume_total)
       .style("left", (event.x)/2 + "px")
       .style("top", (event.y)/2 + "px")
+      .style("position", "fixed")
   }
   const mouseleave = function(event,d) {
     tooltip
@@ -87,14 +87,14 @@ d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/he
   svg.selectAll()
     .data(data)
     .join("rect")
-      .attr("x", function(d) { return x(d.third_octect) })
-      .attr("y", function(d) { return y(d.fourth_octect) })
+      .attr("x", function(d) { return x(d.third_octet) })
+      .attr("y", function(d) { return y(d.fourth_octet) })
       .attr("rx", 4)
       .attr("ry", 4)
       .attr("width", x.bandwidth() )
       .attr("height", y.bandwidth() )
-      .style("fill", function(d) { return myColor(d.packet_total)} )
-      .style("stroke-width", 4)
+      .style("fill", function(d) { return myColor(d.volume_total)} )
+      .style("stroke-width", 0)
       .style("stroke", "none")
       .style("opacity", 0.8)
     .on("mouseover", mouseover)

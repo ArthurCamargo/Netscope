@@ -26,7 +26,6 @@ header {
   padding: 0;
   width: 300px;
   background-color: $primary-color;
-  position: fixed;
   height: 100%;
   overflow: auto;
 
@@ -48,17 +47,6 @@ main {
         justify-content: center;
         align-items: center;
 
-    }
-
-
-    #charts {
-        display: flex;
-        justify-content: space-around;
-
-        div {
-            width: 45%;
-            height: 300px;
-        }
     }
 }
 

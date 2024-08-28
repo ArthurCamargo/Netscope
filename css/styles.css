@@ -21,7 +21,6 @@ header h1 {
   padding: 0;
   width: 300px;
   background-color: #3498db;
-  position: fixed;
   height: 100%;
   overflow: auto;
 }
@@ -41,14 +40,6 @@ main #my_dataviz {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-main #charts {
-  display: flex;
-  justify-content: space-around;
-}
-main #charts div {
-  width: 45%;
-  height: 300px;
 }
 
 div.content {

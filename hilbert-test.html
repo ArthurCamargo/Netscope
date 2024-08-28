@@ -12,8 +12,8 @@
 
     <script>
         const width = 800, height = 800;
-        const gridSize = 256;
-        const order = 8;
+        const gridSize = 128;
+        const order = 7;
 
         const svg = d3.select("#hilbert-map")
                       .append("svg")
@@ -82,8 +82,6 @@
               return [q1, q3];
             }
 
-
-
             // Find min and max packet values for color scaling
             const packetCounts = data.map(d => d.packet_total);
 
@@ -102,8 +100,35 @@
 
             console.log(dataMap)
 
-            // Draw the entire /16 grid with default or placeholder values
-            for (let i = 0; i < 65536; i++) {
+           function drawBoundaries() {
+            const rectSize = width / gridSize;
+
+            for (let block = 0; block < 256; block++) {
+                const blockX = Math.floor(block / 16);
+                const blockY = block % 16;
+
+                const blockXPos = blockX * rectSize * 16;
+                const blockYPos = blockY * rectSize * 16;
+
+                svg.append("rect")
+                   .attr("x", blockXPos)
+                   .attr("y", blockYPos)
+                   .attr("width", rectSize * 16)
+                   .attr("height", rectSize * 16)
+                   .attr("fill", "none")
+                   .attr("stroke", "black")
+                   .attr("stroke-width", 1);
+                svg.append("text")
+                   .attr("x", blockXPos + 5)  // Position text within the block
+                   .attr("y", blockYPos + 15)  // Position text within the block
+                   .attr("fill", "black")
+                   .attr("font-size", "16px")
+                   .attr("font-weight", "bold")
+                .text(`${blockX + 28 + blockY * 4} /${24}`);
+              }
+            }
+
+            for (let i = 8192 ; i < 8192 * 2; i++) {
                 const packets = dataMap.get(i) || 0;  // Use 0 if no data for this index
                 const coords = hilbertCurve(i, order);
                 const x = coords[0] * (width / gridSize);
@@ -118,6 +143,8 @@
                    .append("title")
                    .text(`Index: ${i}\nPackets: ${packets}`);
             }
+
+          drawBoundaries()
         }).catch(error => {
             console.error('Error loading the CSV data:', error);
         });

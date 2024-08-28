@@ -13,14 +13,23 @@
     <header>
         <h1>Network Telescope Data Visualization</h1>
     </header>
-    <!-- <div id="sidebar"> -->
-    <!--   <a href="">Destinations</a> -->
-    <!--   <a href="">Sources</a> -->
-    <!--   <a href="">Protocols</a> -->
-    <!--   <a href="">Ases</a> -->
-    <!-- </div id="sidebar"> -->
     <main>
+      <div id="sidebar">
+        <a href="">Destinations</a>
+        <a href="">Sources</a>
+        <a href="">Protocols</a>
+        <a href="">Ases</a>
+      </div>
       <div id="my_dataviz"></div>
+      <div id="buttons">
+        <div id="radio-data">
+          <h1>Data type</h1>
+          <span id="radios">
+          <input id="radios-button" type="radio" name="data" value="packet_total" checked> Packets <br>
+          <input id="radios-button" type="radio" name="data" value="volume_total"> Volume <br>
+          <span>
+        </div>
+      </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script type="module" src="js/script.js"></script>

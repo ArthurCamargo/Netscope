@@ -17,12 +17,8 @@ header h1 {
 }
 
 #sidebar {
-  margin: 0;
-  padding: 0;
   width: 300px;
   background-color: #3498db;
-  height: 100%;
-  overflow: auto;
 }
 #sidebar a {
   display: block;
@@ -34,7 +30,39 @@ header h1 {
 }
 
 main {
-  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+main #buttons {
+  padding: 10px;
+  background-color: #3498db;
+}
+main #buttons #radio-data {
+  display: block;
+  padding: 0px 20px 10px 20px;
+  border: solid;
+  border-color: white;
+}
+main #buttons h1 {
+  font-size: 22px;
+  color: white;
+}
+main #buttons input {
+  appearance: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #999;
+  transition: 0.2s all linear;
+  margin-right: 5px;
+  position: relative;
+  top: 4px;
+}
+main #buttons input:checked {
+  border: 6px solid white;
+}
+main #buttons #radios {
+  color: white;
 }
 main #my_dataviz {
   display: flex;

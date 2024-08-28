@@ -15,7 +15,13 @@ const svg = d3.select("#my_dataviz")
 d3.csv("../data/hilbert/csvs/ip_dst_processed.csv").then(function(data) {
 
   // Labels of row and columns -> unique identifier of the column called 
-  // 'third_octect' and 'fourth_octect'
+  // 'third_octet' and 'fourth_octet'
+
+  // Convert data to numerical values
+  data.forEach(d => {
+                d.packet_total = +d.packet_total;
+                d.volume_total = +d.volume_total;
+              });
 
   const ThirdOctect = Array.from(new Set(data.map(d => d.third_octet)))
   const FourthOctect = Array.from(new Set(data.map(d => d.fourth_octet)))
@@ -26,7 +32,7 @@ d3.csv("../data/hilbert/csvs/ip_dst_processed.csv").then(function(data) {
     .domain(ThirdOctect)
     .paddingInner(0.1);
   svg.append("g")
-    .style("font-size", 15)
+    .style("font-size", "10px")
     .attr("transform", `translate(0, ${height})`)
     .call(d3.axisBottom(x).tickSize(0))
     .select(".domain").remove()
@@ -38,14 +44,14 @@ d3.csv("../data/hilbert/csvs/ip_dst_processed.csv").then(function(data) {
     .domain(FourthOctect)
     .paddingInner(0.1);
   svg.append("g")
-    .style("font-size", 15)
+    .style("font-size", "14px")
     .call(d3.axisLeft(y).tickSize(0))
     .select(".domain").remove()
 
   // Build color scale
   const myColor = d3.scaleSequential()
     .interpolator(d3.interpolateViridis)
-    .domain([1.744257e+07,2.e+07])
+  .domain([1.7e+07,2.e+07])
 
   // create a tooltip
   const tooltip = d3.select("#my_dataviz")
@@ -68,9 +74,9 @@ d3.csv("../data/hilbert/csvs/ip_dst_processed.csv").then(function(data) {
   }
   const mousemove = function(event,d) {
     tooltip
-      .html("<h4>IPv4: </h4>" + d.dst + "<br>" +
-            "packet total: " + d.packet_total + "<br>" +
-            "volume total: " + d.volume_total)
+      .html("<strong>" + d.dst + "</strong><br>" +
+            "packets: " + d.packet_total + "<br>" +
+            "volume (bytes): " + d.volume_total)
       .style("left", (event.x)/2 + "px")
       .style("top", (event.y)/2 + "px")
       .style("position", "fixed")
@@ -83,39 +89,58 @@ d3.csv("../data/hilbert/csvs/ip_dst_processed.csv").then(function(data) {
       .style("opacity", 0.8)
   }
 
+  // Function to calculate the IQR (or a similar range focusing on common values)
+  function calculateIQR(data, column, low_quantile, high_quantile) {
+      const values = data.map(d => d[column]).sort(d3.ascending);
+      const q1 = d3.quantile(values, low_quantile);
+      const q3 = d3.quantile(values, high_quantile);
+      return [q1, q3];
+  }
+
   // add the squares
-  svg.selectAll()
-    .data(data)
-    .join("rect")
-      .attr("x", function(d) { return x(d.third_octet) })
-      .attr("y", function(d) { return y(d.fourth_octet) })
-      .attr("rx", 4)
-      .attr("ry", 4)
-      .attr("width", x.bandwidth() )
-      .attr("height", y.bandwidth() )
-      .style("fill", function(d) { return myColor(d.volume_total)} )
-      .style("stroke-width", 0)
-      .style("stroke", "none")
-      .style("opacity", 0.8)
-    .on("mouseover", mouseover)
-    .on("mousemove", mousemove)
-    .on("mouseleave", mouseleave)
+  function drawHeatmap(data, column) {
+    const [low, high] = calculateIQR(data, column, 0.10, 0.90)
+
+    myColor.domain([low, high]);
+
+    const squares = svg.selectAll()
+      .data(data, d => d.third_octet + ":" + d.fourth_octet);
+
+    squares.enter()
+      .append("rect")
+      .merge(squares)
+        .attr("x", function(d) { return x(d.third_octet) })
+        .attr("y", function(d) { return y(d.fourth_octet) })
+        .attr("rx", 4)
+        .attr("ry", 4)
+        .attr("width", x.bandwidth() )
+        .attr("height", y.bandwidth() )
+        .style("fill", function(d) { return myColor(d[column])})
+        .style("stroke-width", 0)
+        .style("stroke", "none")
+        .style("opacity", 0.8)
+      .on("mouseover", mouseover)
+      .on("mousemove", mousemove)
+      .on("mouseleave", mouseleave)
+
+    squares.exit().remove();
+  }
+
+  // Function to update the heatmap colors based on the selected column
+  function updateHeatmapColors(data, column) {
+    const [low, high] = calculateIQR(data, column); // Calculate the IQR for the column
+    myColor.domain([low, high]); // Use the IQR as the domain for the color scale
+
+    svg.selectAll("rect")
+       .data(data, d => d.third_octet + ':' + d.fourth_octet)
+       .attr("fill", d => myColor(d[column]));
+  }
+
+  drawHeatmap(data, 'packet_total');
+
+  // Event listener for the radio buttons
+  d3.selectAll("input[name='data']").on("change", function() {
+      const selectedColumn = this.value;
+      updateHeatmapColors(data, selectedColumn);
+  });
 })
-
-// Add title to graph
-svg.append("text")
-        .attr("x", 0)
-        .attr("y", -50)
-        .attr("text-anchor", "left")
-        .style("font-size", "22px")
-        .text("Network telescope requets");
-
-// Add subtitle to graph
-svg.append("text")
-        .attr("x", 0)
-        .attr("y", -20)
-        .attr("text-anchor", "left")
-        .style("font-size", "14px")
-        .style("fill", "grey")
-        .style("max-width", 400)
-        .text("The number of requets that was received in the date from 2023-12-14 to 2024-01-14");

@@ -11,17 +11,19 @@ const svg = d3.select("#my_dataviz")
 .append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-  //Read the data
-  d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv").then(function(data) {
+//Read the data
+d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv").then(function(data) {
 
-  // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
-  const myGroups = Array.from(new Set(data.map(d => d.group)))
-  const myVars = Array.from(new Set(data.map(d => d.variable)))
+  // Labels of row and columns -> unique identifier of the column called 
+  // 'third_octect' and 'fourth_octect'
+
+  const ThirdOctect = Array.from(new Set(data.map(d => d.groups)))
+  const FourthOctect = Array.from(new Set(data.map(d => d.variables)))
 
   // Build X scales and axis:
   const x = d3.scaleBand()
     .range([ 0, width ])
-    .domain(myGroups)
+    .domain(ThirdOctect)
     .padding(0.1);
   svg.append("g")
     .style("font-size", 15)
@@ -29,10 +31,11 @@ const svg = d3.select("#my_dataviz")
     .call(d3.axisBottom(x).tickSize(0))
     .select(".domain").remove()
 
+
   // Build Y scales and axis:
   const y = d3.scaleBand()
     .range([ height, 0 ])
-    .domain(myVars)
+    .domain(FourthOctect)
     .padding(0.1);
   svg.append("g")
     .style("font-size", 15)
@@ -42,7 +45,8 @@ const svg = d3.select("#my_dataviz")
   // Build color scale
   const myColor = d3.scaleSequential()
     .interpolator(d3.interpolateRainbow)
-    .domain([1,100])
+    .domain([1, 100])
+    .range([0, 2_298_457])
 
   // create a tooltip
   const tooltip = d3.select("#my_dataviz")
@@ -65,9 +69,9 @@ const svg = d3.select("#my_dataviz")
   }
   const mousemove = function(event,d) {
     tooltip
-      .html("<h1>value:</h1>" + d.value + "<br>" +
-            "value: " + d.value/2
-      )
+      .html("<h4>IPv4: </h4>" + d.dst + "<br>" +
+            "packet total: " + d.packet_total + "<br>" +
+            "volume total: " + d.volume_total)
       .style("left", (event.x)/2 + "px")
       .style("top", (event.y)/2 + "px")
   }
@@ -81,15 +85,15 @@ const svg = d3.select("#my_dataviz")
 
   // add the squares
   svg.selectAll()
-    .data(data, function(d) {return d.group+':'+d.variable;})
+    .data(data)
     .join("rect")
-      .attr("x", function(d) { return x(d.group) })
-      .attr("y", function(d) { return y(d.variable) })
+      .attr("x", function(d) { return x(d.third_octect) })
+      .attr("y", function(d) { return y(d.fourth_octect) })
       .attr("rx", 4)
       .attr("ry", 4)
       .attr("width", x.bandwidth() )
       .attr("height", y.bandwidth() )
-      .style("fill", function(d) { return myColor(d.value)} )
+      .style("fill", function(d) { return myColor(d.packet_total)} )
       .style("stroke-width", 4)
       .style("stroke", "none")
       .style("opacity", 0.8)

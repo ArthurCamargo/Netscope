@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hilbert Map for /16 Network with /19 Data</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+    <!-- Container for the Hilbert Map -->
+    <div id="hilbert-map"></div>
+
+    <script>
+        const width = 800, height = 800;
+        const gridSize = 256;
+        const order = 8;
+
+        const svg = d3.select("#hilbert-map")
+                      .append("svg")
+                      .attr("width", width)
+                      .attr("height", height)
+                      .style("background", "#fafafa");
+
+        function ipToInt(ip) {
+            return ip.split('.').reduce((int, octet) => (int << 8) + parseInt(octet), 0) >>> 0;
+        }
+
+        function ipToIntLast2(ip) {
+          // Split the IP address into its octets
+          const octets = ip.split('.').map(Number);
+
+          // Ensure we have exactly 4 octets
+          if (octets.length !== 4) {
+              throw new Error('Invalid IP address format');
+          }
+
+          // Extract the last two octets
+          const thirdOctet = octets[2];
+          const fourthOctet = octets[3];
+
+          // Convert to integer
+          return (thirdOctet << 8) + fourthOctet;
+        }
+
+        function hilbertCurve(index, order) {
+            let x = 0, y = 0;
+            let s = 1;
+            for (let i = 0; i < order; i++) {
+                const rx = 1 & (index >> 1);
+                const ry = 1 & (index ^ rx);
+                [x, y] = rotate(s, x, y, rx, ry);
+                x += s * rx;
+                y += s * ry;
+                index >>= 2;
+                s *= 2;
+            }
+            return [x, y];
+        }
+
+        function rotate(n, x, y, rx, ry) {
+            if (ry === 0) {
+                if (rx === 1) {
+                    x = n - 1 - x;
+                    y = n - 1 - y;
+                }
+                return [y, x];
+            }
+            return [x, y];
+        }
+
+        // Load the CSV data
+        d3.csv("data/hilbert/csvs/ip_dst_processed.csv").then(data => {
+            // Convert packet counts to numbers
+            data.forEach(d => {
+                d.packet_total = +d.packet_total;
+            });
+
+            function calculateIQR(data, column, low_quantile, high_quantile) {
+              const values = data.map(d => d[column]).sort(d3.ascending);
+              const q1 = d3.quantile(values, low_quantile);
+              const q3 = d3.quantile(values, high_quantile);
+              return [q1, q3];
+            }
+
+
+
+            // Find min and max packet values for color scaling
+            const packetCounts = data.map(d => d.packet_total);
+
+            // Define color scale based on packet counts
+            const colorScale = d3.scaleSequential(d3.interpolateGreens)
+                                 .domain(calculateIQR(data, 'packet_total', 0.1,
+                                 0.9));
+
+            // Prepare data map for fast lookup
+            const dataMap = new Map();
+            data.forEach(d => {
+                const ipInt = ipToInt(d.dst);
+                const index = ipToIntLast2(d.dst);
+                dataMap.set(index, d.packet_total);
+            });
+
+            console.log(dataMap)
+
+            // Draw the entire /16 grid with default or placeholder values
+            for (let i = 0; i < 65536; i++) {
+                const packets = dataMap.get(i) || 0;  // Use 0 if no data for this index
+                const coords = hilbertCurve(i, order);
+                const x = coords[0] * (width / gridSize);
+                const y = coords[1] * (height / gridSize);
+
+                svg.append("rect")
+                   .attr("x", x)
+                   .attr("y", y)
+                   .attr("width", width / gridSize)
+                   .attr("height", height / gridSize)
+                   .attr("fill", colorScale(packets))
+                   .append("title")
+                   .text(`Index: ${i}\nPackets: ${packets}`);
+            }
+        }).catch(error => {
+            console.error('Error loading the CSV data:', error);
+        });
+    </script>
+
+</body>
+</html>
+
